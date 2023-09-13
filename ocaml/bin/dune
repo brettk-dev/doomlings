@@ -1,0 +1,4 @@
+(executable
+ (public_name doomlings_oc)
+ (name main)
+ (libraries doomlings_oc))
