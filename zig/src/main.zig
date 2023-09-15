@@ -17,22 +17,23 @@ fn get_int(comptime int_type: type) int_type {
     }
 }
 
-fn get_name(n: u64) [16]u8 {
+fn get_name(n: u64, out: *[16]u8) !void {
     const stdin = std.io.getStdIn().reader();
 
+    var defaultPlayerName: [16]u8 = undefined;
+    _ = try std.fmt.bufPrint(&defaultPlayerName, "{d}", .{n});
+
     var buf: [16]u8 = undefined;
+    var input = (stdin.readUntilDelimiterOrEof(&buf, '\n') catch &defaultPlayerName) orelse &defaultPlayerName;
 
-    const defaultPlayerName = std.fmt.allocPrint(std.heap.page_allocator, "Player {d}", .{n}) catch "";
+    _ = try std.fmt.bufPrint(out, "{s}", .{input});
+}
 
-    if (stdin.readUntilDelimiterOrEof(buf[0..], '\n') catch "0") |input| {
-        if (input.len == 0) {
-            return @as([16]u8, defaultPlayerName);
-        }
+pub fn get_score(score_type: []const u8, player_name: []const u8) !i64 {
+    const stdout = std.io.getStdOut().writer();
 
-        return @as([16]u8, input);
-    } else {
-        return @as([16]u8, defaultPlayerName);
-    }
+    try stdout.print("What is {s}'s {s} score?\n", .{ player_name, score_type });
+    return get_int(i64);
 }
 
 pub fn main() !void {
@@ -49,13 +50,39 @@ pub fn main() !void {
         num_players = get_int(usize);
     }
 
-    try stdout.print("Player count: {d}\n", .{num_players});
-
-    const players = std.ArrayList(Player);
-    for (1..num_players) |n| {
-        const name = get_name(n);
-        players.addOne(Player{ .name = name, .score = 0 });
+    try stdout.print("\n", .{});
+    var players = std.ArrayList(Player).init(std.heap.page_allocator);
+    for (0..num_players) |n| {
+        const playerNumber = n + 1;
+        try stdout.print("What is player {d}'s name?\n", .{playerNumber});
+        var player = Player{ .name = undefined, .score = 0 };
+        try get_name(playerNumber, &player.name);
+        try players.append(player);
     }
 
-    try stdout.print("Player 1's name: {s}", .{players[0].name});
+    try stdout.print("\n", .{});
+    for (0..num_players) |n| {
+        players.items[n].score += try get_score("World's End", &players.items[n].name);
+    }
+
+    try stdout.print("\n", .{});
+    for (0..num_players) |n| {
+        players.items[n].score += try get_score("Face Value", &players.items[n].name);
+    }
+
+    try stdout.print("\n", .{});
+    for (0..num_players) |n| {
+        players.items[n].score += try get_score("Bonus Points", &players.items[n].name);
+    }
+
+    try stdout.print("\n", .{});
+    try stdout.print("\n", .{});
+    try stdout.print("{s:<2}{s:<16}{s:>5}\n", .{ "#", "PLAYER", "SCORE" });
+    try stdout.print("\n", .{});
+
+    for (0..num_players) |n| {
+        const player = players.items[n];
+        try stdout.print("{d:<2}{s:<16}{d:>5}\n", .{ n + 1, player.name, player.score });
+    }
+    try stdout.print("\n", .{});
 }
