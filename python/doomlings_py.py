@@ -3,6 +3,23 @@ class Player:
         self.name = ""
         self.score = 0
 
+    def input_name(self, n: int):
+        print(f"What is player {n}'s name?")
+        name = input()
+        if name.__len__() == 0:
+            return f"Player {n}"
+        self.name = name
+
+    def input_score(self, type: str):
+        print(f"What is {self.name}'s {type} score?")
+        score = None
+        while score == None:
+            try:
+                score = int(input())
+            except Exception:
+                score = None
+        self.score += score
+
 
 def get_player_count():
     print("How many people are playing?")
@@ -15,25 +32,6 @@ def get_player_count():
     return player_count
 
 
-def get_player_name(n: int):
-    print(f"What is player {n}'s name?")
-    player_name = input()
-    if player_name.__len__() == 0:
-        return f"Player {n}"
-    return player_name
-
-
-def get_player_score(player: Player, score_type: str):
-    print(f"What is {player.name}'s {score_type} score?")
-    player_score = None
-    while player_score == None:
-        try:
-            player_score = int(input())
-        except Exception:
-            player_score = None
-    return player_score
-
-
 def main():
     print("")
     print(":::: DOOMLINGS SCORE CALCULATOR ::::")
@@ -42,16 +40,16 @@ def main():
     players = list(map(lambda i: Player(), range(player_count)))
     print("")
     for index, player in enumerate(players):
-        player.name = get_player_name(index + 1)
+        player.input_name(index + 1)
     print("")
     for player in players:
-        player.score += get_player_score(player, "World's End")
+        player.input_score("World's End")
     print("")
     for player in players:
-        player.score += get_player_score(player, "Face Value")
+        player.input_score("Face Value")
     print("")
     for player in players:
-        player.score += get_player_score(player, "Bonus")
+        player.input_score("Bonus")
     players.sort(key=lambda p: p.score, reverse=True)
     print("")
     print("")
