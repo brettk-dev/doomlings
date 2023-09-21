@@ -11,6 +11,8 @@ A CLI tool to calculate [Doomlings](https://doomlings.com/) scores written in mu
 - Go
 - Haskell
 - OCaml
+- Python
+- Ruby
 - Rust
 - TypeScript (bun)
-- Zig (incomplete)
+- Zig (does not sort the players or format the table correctly)
